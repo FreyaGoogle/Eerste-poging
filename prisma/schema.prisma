@@ -6,8 +6,9 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
 // ─── LocatieCheck ────────────────────────────────────────────────────────────
@@ -18,7 +19,7 @@ model LocatieCheck {
   datum           DateTime
   afdeling        String
   doelgroep       String
-  context         String    @default("")
+  context         String    @default("") @db.Text
   conceptStatus   String    @default("concept") // "concept" | "definitief"
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
@@ -40,7 +41,7 @@ model Observatie {
   moment          String       // rondleiding, maaltijd, activiteit, overig
   bewijsType      String       // direct gezien, bewonersuiting, familie-uiting, teamuitleg
   tags            String       // JSON array: prikkel, bejegening, inrichting, maaltijd, ritueel, etc.
-  inhoud          String       // feitelijke observatie (1-3 zinnen)
+  inhoud          String       @db.Text // feitelijke observatie (1-3 zinnen)
   createdAt       DateTime     @default(now())
 }
 
@@ -53,11 +54,11 @@ model ThemaScore {
 
   themaId               Int          // 1-10
   ingevoerdeScore       Float        @default(0)   // 1.0 - 10.0 in steps of 0.5 (0 = not filled)
-  positiefBewijs        String       @default("") // JSON array of strings
-  negatiefBewijs        String       @default("") // JSON array of strings
-  positiefMetKanttekening String     @default("") // JSON array of strings
-  bewonersstem          String       @default("")
-  checkVraagAntwoorden  String       @default("") // JSON: { vraagId: "Ja"|"Deels"|"Nee"|"Onbekend" }
+  positiefBewijs        String       @default("") @db.Text // JSON array of strings
+  negatiefBewijs        String       @default("") @db.Text // JSON array of strings
+  positiefMetKanttekening String     @default("") @db.Text // JSON array of strings
+  bewonersstem          String       @default("") @db.Text
+  checkVraagAntwoorden  String       @default("") @db.Text // JSON: { vraagId: "Ja"|"Deels"|"Nee"|"Onbekend" }
   createdAt             DateTime     @default(now())
   updatedAt             DateTime     @updatedAt
 
@@ -72,13 +73,13 @@ model BOMObservatie {
   locatieCheck    LocatieCheck @relation(fields: [locatieCheckId], references: [id], onDelete: Cascade)
 
   sectie          String       // eerste_indruk | bewoner_huiskamer | werkleefprocessen | bejegening | onbegrepen_gedrag
-  antwoorden      String       @default("") // JSON: { vraagId: string }
-  prikkelDuiding  String       @default("") // JSON: { type: gunstig|ongunstig, toelichting: string }
-  gekoppeldeThemas String      @default("") // JSON array of themaIds (e.g. [6,10,2])
+  antwoorden      String       @default("") @db.Text // JSON: { vraagId: string }
+  prikkelDuiding  String       @default("") @db.Text // JSON: { type: gunstig|ongunstig, toelichting: string }
+  gekoppeldeThemas String      @default("") @db.Text // JSON array of themaIds (e.g. [6,10,2])
 
   participerend   Boolean      @default(false)
-  watDeedObserveerder String   @default("")
-  effectOpBewoners   String   @default("")
+  watDeedObserveerder String   @default("") @db.Text
+  effectOpBewoners   String   @default("") @db.Text
 
   createdAt       DateTime     @default(now())
   updatedAt       DateTime     @updatedAt
@@ -94,8 +95,8 @@ model HospitalityItem {
   locatieCheck    LocatieCheck @relation(fields: [locatieCheckId], references: [id], onDelete: Cascade)
 
   categorie       String       // eerste_indruk | representativiteit | contactstijl | eten_drinken | tafeletiquette
-  antwoorden      String       @default("") // JSON: { itemId: boolean | null }
-  notities        String       @default("")
+  antwoorden      String       @default("") @db.Text // JSON: { itemId: boolean | null }
+  notities        String       @default("") @db.Text
 
   createdAt       DateTime     @default(now())
   updatedAt       DateTime     @updatedAt
